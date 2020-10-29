@@ -244,8 +244,7 @@ public class Pawn extends Piece {
     }
 
     /**
-     * Generate a list of possible moves for the pawn at this instance in
-     * time.
+     * Generate a list of possible moves for the pawn at this instance in time.
      *
      * @param board The current chess board.
      * @param current The current position of this pawn.

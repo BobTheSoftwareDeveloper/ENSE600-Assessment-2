@@ -3,6 +3,7 @@ package com.bobliou.chessgame.GUI;
 import com.bobliou.chessgame.Game.Board;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.JPanel;
 
 /**
  *
@@ -11,10 +12,12 @@ import java.awt.event.MouseListener;
 public class Listeners implements MouseListener {
     
     Board board;
+    JPanel topPanel;
     
-    public Listeners(Board board) {
-        System.out.println(board);
+    public Listeners(Board board, JPanel topPanel) {
         this.board = board;
+        this.topPanel = topPanel;
+        System.out.println(topPanel);
     }
     
     public int getRowFromMouseEvent(MouseEvent e) {
@@ -36,6 +39,8 @@ public class Listeners implements MouseListener {
         System.out.println(row);
         System.out.println(col);
         System.out.println(board.getPosition(row, col).getPiece().getPossibleMoves());
+        
+        topPanel.repaint();
     }
 
     @Override

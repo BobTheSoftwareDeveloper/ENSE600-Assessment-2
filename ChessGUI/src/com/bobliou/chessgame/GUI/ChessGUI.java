@@ -5,6 +5,7 @@ import com.bobliou.chessgame.Game.Position;
 import com.bobliou.chessgame.Pieces.Piece;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,10 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 class GameData {
 
@@ -39,10 +42,16 @@ public class ChessGUI extends JFrame {
 
     // GUI components
     JLayeredPane layeredPanel;
-    JPanel topPanel;
     JPanel boardPanel;
     JPanel piecePanel;
     JPanel highlightPanel;
+    
+    // Input Panel
+    JPanel inputPanel;
+    JLabel infoLabel;
+    JTextField inputField;
+    JButton moveButton;
+    
     Map<String, ImageIcon> imageMap;
 
     public ChessGUI() {
@@ -51,30 +60,44 @@ public class ChessGUI extends JFrame {
         // Chess game engine
         board = new Board();
         gameData = new GameData();
-        listener = new Listeners(board);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        
+
         loadImages();
         setupLayeredPane();
         buildLayeredPanel();
-        
+        buildInputPanel();
+
         add(layeredPanel, BorderLayout.CENTER);
-        
+        add(inputPanel, BorderLayout.SOUTH);
+
         pack();
         setVisible(true);
     }
-
-    public void buildLayeredPanel() {        
-//        board.generateAllPossibleMoves();
+    
+    public void buildInputPanel() {
+        inputPanel = new JPanel(new BorderLayout());
         
+        infoLabel = new JLabel("White player's turn");
+        inputPanel.add(infoLabel, BorderLayout.NORTH);
+        
+        inputField = new JTextField();
+        inputPanel.add(inputField, BorderLayout.CENTER);
+        
+        moveButton = new JButton("Move");
+        inputPanel.add(moveButton, BorderLayout.EAST);
+    }
+
+    public void buildLayeredPanel() {
+//        board.generateAllPossibleMoves();
+
         // loop through the board
         for (int row = 0; row < BOARD_LENGTH; row++) {
             boolean isOddRow = (row + 1) % 2 == 1;
             for (int col = 0; col < BOARD_LENGTH; col++) {
                 boolean isOddCol = (col + 1) % 2 == 1;
-                
+
                 Position currentPosition = board.getPosition(row, col);
                 Piece currentPiece = currentPosition.getPiece() != null ? currentPosition.getPiece() : null;
                 if (currentPiece != null) {
@@ -88,7 +111,7 @@ public class ChessGUI extends JFrame {
                     JLabel label = new JLabel(imageMap.get("blank"));
                     piecePanel.add(label);
                 }
-                
+
                 if (isOddRow == isOddCol) {
                     // is white square
                     JLabel label = new JLabel(imageMap.get("WhiteSquare"));
@@ -101,31 +124,24 @@ public class ChessGUI extends JFrame {
             }
         }
     }
-    
+
     public void setupLayeredPane() {
-        topPanel = new JPanel();
-        topPanel.setOpaque(false);
-        topPanel.setPreferredSize(new Dimension(640, 640));
-        topPanel.setBounds(0, 0, 640, 640);
-        topPanel.addMouseListener(listener);
-        
         boardPanel = new JPanel(new GridLayout(8, 8, 0, 0));
         boardPanel.setOpaque(false);
         boardPanel.setPreferredSize(new Dimension(640, 640));
         boardPanel.setBounds(0, 0, 640, 640);
-        
+
         piecePanel = new JPanel(new GridLayout(8, 8, 0, 0));
         piecePanel.setOpaque(false);
         piecePanel.setPreferredSize(new Dimension(640, 640));
         piecePanel.setBounds(0, 0, 640, 640);
-        
+
         layeredPanel = new JLayeredPane();
         layeredPanel.setPreferredSize(new Dimension(640, 640));
         layeredPanel.setVisible(true);
-        
+
         layeredPanel.add(boardPanel, new Integer(0));
         layeredPanel.add(piecePanel, new Integer(1));
-        layeredPanel.add(topPanel, new Integer(2));
     }
 
     public void loadImages() {
