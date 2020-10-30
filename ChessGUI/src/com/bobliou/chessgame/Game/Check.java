@@ -318,7 +318,7 @@ public class Check {
      * @return The current condition of the game.
      */
     public static String checkForCheck(Board board) {
-        boolean isWhiteTurn = GameMain.gameData.isWhiteTurn;
+        boolean isWhiteTurn = GameEngine.getGameData().isWhiteTurn;
 
         // Using hashmap for O(1) store and access. Store the current player's king square position.
         HashMap<Position, Integer> hashMapKingSquare = new HashMap<>(); 
