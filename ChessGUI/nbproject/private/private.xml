@@ -4,8 +4,10 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/src/com/bobliou/chessgame/GUI/Listeners.java</file>
-            <file>file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/src/com/bobliou/chessgame/Pieces/Pawn.java</file>
+            <file>file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/derby.properties</file>
             <file>file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/src/com/bobliou/chessgame/GUI/ChessGUI.java</file>
+            <file>file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/src/com/bobliou/chessgame/Game/Check.java</file>
+            <file>file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/src/com/bobliou/chessgame/Game/GameEngine.java</file>
         </group>
     </open-files>
 </project-private>
