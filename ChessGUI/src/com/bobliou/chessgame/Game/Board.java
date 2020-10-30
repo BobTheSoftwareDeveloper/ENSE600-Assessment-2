@@ -100,46 +100,6 @@ public class Board {
     }
 
     /**
-     * Print out the whole board. The '\\u2003' and '\\u2006' unicode characters
-     * used here are special space characters used to align the text and chess
-     * emoji.
-     */
-    public void printBoard() {
-        for (int row = 0; row < BOARD_LENGTH; row++) {
-            boolean isOddRow = (row + 1) % 2 == 1;
-            String line = "";
-            line += String.format("%3s", BOARD_LENGTH - row);
-            for (int column = 0; column < BOARD_LENGTH; column++) {
-                boolean isOddCol = (column + 1) % 2 == 1;
-                Piece currentPiece = boardArray[row][column].getPiece() != null ? boardArray[row][column].getPiece() : null;
-                if (currentPiece != null) {
-                    currentPiece.generatePossibleMoves(this, boardArray[row][column]); // UNCOMMENT TODO
-                    String name = currentPiece.getName();
-                    String colour = currentPiece.getIsWhite() ? "W" : "B";
-                    line += String.format("%3s", chessMap.get(colour + name));
-                } else {
-                    if (isOddRow == isOddCol) {
-                        // print space
-                        // unicode character \u2003 used for aligning the characters
-                        line += String.format("%3s", "\u2003");
-                    } else {
-                        // print black square
-                        // unicode character \u2006 used for aligning the characters
-                        line += String.format("%3s", "\u2006\u2006\u2006\u2006\u2006\u2006\u2006\u2006⬛");
-                    }
-                }
-            }
-            System.out.println(line);
-        }
-
-        String line = "   ";
-        for (int i = 0; i < BOARD_LENGTH; i++) {
-            line += String.format("%s", "\u2006\u2006\u2006\u2006\u2006\u2006\u2006\u2006" + numberToLetter(i) + "\u2006"); // Lining the letters up with chess pieces
-        }
-        System.out.println(line);
-    }
-
-    /**
      * Get the position object by passing in the square location as string.
      *
      * @param move The string representation of the square location.

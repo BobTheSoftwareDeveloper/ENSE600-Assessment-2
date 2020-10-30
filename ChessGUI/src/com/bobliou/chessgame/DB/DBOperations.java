@@ -1,9 +1,7 @@
 package com.bobliou.chessgame.DB;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,6 +17,9 @@ public class DBOperations {
     private String passwordDerby = "pdc";
     private Connection conn;
 
+    /**
+     * Establish the database connectino
+     */
     public void establishConnection() {
         try {
             conn = DriverManager.getConnection(url, usernameDerby, passwordDerby);
@@ -27,6 +28,9 @@ public class DBOperations {
         }
     }
 
+    /**
+     * Create a new table
+     */
     public void createTable() {
         try {
             Statement statement = conn.createStatement();
@@ -39,13 +43,15 @@ public class DBOperations {
                     + "'First Game', 'e2 e4')";
             statement.executeUpdate(sqlInsert);
 
-            System.out.println("Table created");
-
         } catch (SQLException ex) {
             System.err.println("Error: " + ex);
         }
     }
 
+    /**
+     * Add a new game
+     * @param gameName The game name 
+     */
     public void addNewGame(String gameName) {
         try {
             Statement statement = conn.createStatement();
@@ -57,7 +63,12 @@ public class DBOperations {
         }
     }
 
-    public void addGameMoveEntry(String gameName, String move) {
+    /**
+     * Add a game move to the game entry database
+     * @param gameName The game name to add entry for
+     * @param move The move
+     */
+    public synchronized void addGameMoveEntry(String gameName, String move) {
         ResultSet rs = null;
 
         try {
@@ -72,13 +83,16 @@ public class DBOperations {
             
             String sqlUpdate = "UPDATE Chess SET History = '" + history + "' WHERE GAME_NAME = '" + gameName + "'"; 
             statement.executeUpdate(sqlUpdate);
-            
-            System.out.println("some: " + history);
         } catch (SQLException ex) {
             System.err.println("Error: " + ex);
         }
     }
 
+    /**
+     * Get game history given game name
+     * @param gameName the game name to get history for
+     * @return the history
+     */
     public String getGameHistory(String gameName) {
         ResultSet rs = null;
         String history = "";
@@ -91,13 +105,16 @@ public class DBOperations {
             rs = statement.executeQuery(sqlRead);
             rs.next();
             history = rs.getString(1);
-            System.out.println("some: " + history);
         } catch (SQLException ex) {
             System.err.println("Error: " + ex);
         }
         return history;
     }
 
+    /**
+     * Get array of game name
+     * @return Array of game name
+     */
     public String[] getGameName() {
         ResultSet rs = null;
         String[] arr = null;
@@ -122,29 +139,9 @@ public class DBOperations {
         return arr;
     }
 
-    public void getQuery() {
-        ResultSet rs = null;
-
-        try {
-            System.out.println("getting query....");
-            Statement statement = conn.createStatement(
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            String sqlQuery = "select game_name, history from chess";
-
-            rs = statement.executeQuery(sqlQuery);
-            rs.beforeFirst();
-            while (rs.next()) {
-                String name = rs.getString("game_name"); // 1
-                String history = rs.getString(2);
-                System.out.println(name + ": " + history);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DBOperations.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
+    /**
+     * Close the connection to the database.
+     */
     public void closeConnections() {
         if (conn != null) {
             try {

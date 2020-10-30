@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Fri Oct 30 23:14:30 NZDT 2020:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0175-7900-6390-00000e8ab6f8 
-on database directory C:\Users\bob76\Desktop\Chess GUI - Assignment\ChessGUI\Chess with class loader sun.misc.Launcher$AppClassLoader@5c647e05 
+Fri Oct 30 23:53:41 NZDT 2020:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0175-7924-451f-00000e61fd28 
+on database directory C:\Users\bob76\Desktop\Chess GUI - Assignment\ChessGUI\Chess with class loader sun.misc.Launcher$AppClassLoader@1540e19d 
 Loaded from file:/C:/Users/bob76/Desktop/Chess%20GUI%20-%20Assignment/ChessGUI/lib/derby.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_241-b07

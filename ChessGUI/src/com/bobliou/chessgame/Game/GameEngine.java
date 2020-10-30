@@ -31,30 +31,38 @@ public class GameEngine {
         this.gameData = gameData;
         this.chessGUI = chessGUI;
         this.db = db;
-//        db.establishConnection();
-    }
-    
-    public void reset(Board board, GameData gameData) {
-        this.board = board;
-        this.gameData = gameData;
     }
 
-    private void showMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "", JOptionPane.INFORMATION_MESSAGE);
+    /**
+     * Reset the game
+     * @param board the new baord
+     * @param gameData the new game data
+     * @return the result
+     */
+    public boolean reset(Board board, GameData gameData) {
+        if (board != null && gameData != null) {
+            this.board = board;
+            this.gameData = gameData;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Display a message
+     * @param message The message to show
+     * @return result
+     */
+    public boolean showMessage(String message) {
+        if (message != null && !message.equalsIgnoreCase("")) {
+            JOptionPane.showMessageDialog(null, message, "", JOptionPane.INFORMATION_MESSAGE);
+            return true;
+        }
+        return false;
     }
 
     private void showMessage(String message, String title) {
         JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    /**
-     * Check if the save file for Chess exist.
-     *
-     * @return True, if the save file exist. Otherwise, false.
-     */
-    private boolean fileExist() {
-        File f = new File("savefile.txt");
-        return f.exists() && !f.isDirectory();
     }
 
     /**
@@ -65,9 +73,30 @@ public class GameEngine {
      */
     private boolean writeLine(String line) {
         String gameName = chessGUI.getGameName();
-        System.out.println("Line: " + line);
-        db.addGameMoveEntry(gameName, line);
+        Thread thread = new Thread(new UpdateDB(db, gameName, line));
+        thread.start();
         return true;
+    }
+
+    /**
+     * Runnable class to update database entry
+     */
+    private class UpdateDB implements Runnable {
+
+        DBOperations db;
+        String gameName;
+        String line;
+
+        public UpdateDB(DBOperations db, String gameName, String line) {
+            this.db = db;
+            this.gameName = gameName;
+            this.line = line;
+        }
+
+        @Override
+        public void run() {
+            db.addGameMoveEntry(gameName, line);
+        }
     }
 
     /**
@@ -92,9 +121,10 @@ public class GameEngine {
     }
 
     /**
-     * Load an existing save file. Simulate the piece movements by playing the
+     * Load an existing save file.Simulate the piece movements by playing the
      * game internally until the last save point.
      *
+     * @param history the game history
      * @return True, if the game save file was successfully loaded. False
      * otherwise.
      */
@@ -102,11 +132,11 @@ public class GameEngine {
 
         for (String line : history.split(",")) {
             line = line.trim();
-            
+
             if (line == null) {
                 continue;
             }
-            
+
             if (line.equalsIgnoreCase("")) {
                 continue;
             }
@@ -136,9 +166,10 @@ public class GameEngine {
             Position endPosition = board.getPosition(endPositionString);
 
             if (startPosition == null || endPosition == null || promotionName.equals("Error")) {
-                System.out.println("\nYour " + fileObj.getName() + " file is corrupted. Deleting save file.");
-                System.out.println("Please open the program again.");
-                fileObj.delete();
+                String mesasge = "";
+                mesasge += "\n" + ("\nYour " + fileObj.getName() + " file is corrupted. Deleting save file.");
+                mesasge += "\n" + ("Please open the program again.");
+                showMessage(mesasge);
                 System.exit(0);
             }
 
@@ -158,9 +189,10 @@ public class GameEngine {
                 }
             }
 
-            System.out.println("\nInvalid move detected in your " + fileObj.getName() + " file. Deleting save file.");
-            System.out.println("Please open the program again.");
-            fileObj.delete();
+            String message = "";
+            message += "\n" + ("\nInvalid move detected in your " + fileObj.getName() + " file. Deleting save file.");
+            message += "\n" + ("Please open the program again.");
+            showMessage(message);
             System.exit(0);
         }
 
@@ -171,10 +203,10 @@ public class GameEngine {
      * Run the chess game and get user input until the game finishes or an
      * expected error occurs.
      *
-     * @param filename The name of the save file.
+     * @param move The move taken.
+     * @return result
      */
-    public void processMove(String move) {
-        System.out.println(move);
+    public boolean processMove(String move) {
         boolean inCheck = false;
         String message = "";
 
@@ -233,7 +265,7 @@ public class GameEngine {
         if (move.split(" ").length != 2) {
             // The passed in value is incorrect
             showMessage("Please enter the move correctly. E.g. E2 E4");
-            return;
+            return false;
         }
 
         String startPositionString = move.split(" ")[0];
@@ -243,21 +275,21 @@ public class GameEngine {
 
         if (startPosition == null || endPosition == null) {
             showMessage("Invalid input. Please try again.");
-            return;
+            return false;
         }
 
         if (startPosition.getPiece() == null) {
             showMessage("You have selected an empty square. Please try again.");
-            return;
+            return false;
         }
 
         // White players turn but moved a black piece
         if (gameData.isWhiteTurn && !startPosition.getPiece().getIsWhite()) {
             showMessage("It is white player's turn. Please move a white piece.");
-            return;
+            return false;
         } else if (!gameData.isWhiteTurn && startPosition.getPiece().getIsWhite()) {
             showMessage("It is black player's turn. Please move a black piece.");
-            return;
+            return false;
         }
 
         boolean promotionWasDone = false;
@@ -277,7 +309,7 @@ public class GameEngine {
             board.movePiece(startPosition, endPosition);
         } else {
             showMessage("Invalid move for " + startPosition.getPiece().getName() + ". Please try again.");
-            return;
+            return false;
         }
 
         if (promotionWasDone) {
@@ -306,6 +338,7 @@ public class GameEngine {
         gameData.isWhiteTurn = !gameData.isWhiteTurn;
         chessGUI.resetTextBox();
         chessGUI.updateGUI();
+        return true;
     }
 
     /**

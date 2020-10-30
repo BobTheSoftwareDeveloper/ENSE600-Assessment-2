@@ -39,6 +39,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 /**
+ * The main GUI for the project.
  *
  * @author Bob Liou - 18013456
  */
@@ -107,6 +108,10 @@ public class ChessGUI extends JFrame {
         setResizable(false);
     }
 
+    /**
+     * Swap to game panel
+     * @param gameName The game name
+     */
     private void swapToGamePanel(String gameName) {
         this.gameName = gameName;
         this.getContentPane().removeAll();
@@ -115,6 +120,9 @@ public class ChessGUI extends JFrame {
         updateGUI();
     }
 
+    /**
+     * Swap to home panel
+     */
     private void swapToHomePanel() {
         gameNameArr = db.getGameName();
         comboBox.removeAllItems();
@@ -128,6 +136,9 @@ public class ChessGUI extends JFrame {
         repaint();
     }
 
+    /**
+     * Setup the selection panel
+     */
     private void setupSelectionPanel() {
 
         JLabel welcomeLabel = new JLabel("Welcome to a new chess game!", SwingConstants.CENTER);
@@ -175,12 +186,14 @@ public class ChessGUI extends JFrame {
         selectionPanel.setPreferredSize(new Dimension(225, 200));
     }
 
+    /**
+     * Load game listener to listener to selection.
+     */
     private class LoadGameListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
             String selectedGame = gameNameArr[comboBox.getSelectedIndex()];
-            System.out.println(selectedGame);
             String history = db.getGameHistory(selectedGame);
             board = new Board();
             gameData = new GameData();
@@ -190,10 +203,16 @@ public class ChessGUI extends JFrame {
         }
     }
 
+    /**
+     * Reset the text of the textbox
+     */
     public void resetTextBox() {
         inputField.setText("");
     }
 
+    /**
+     * Update the GUI (refresh)
+     */
     public void updateGUI() {
         infoLabel.setText((gameData.isWhiteTurn ? "White" : "Black") + " player's turn");
         piecePanel.removeAll();
@@ -203,6 +222,9 @@ public class ChessGUI extends JFrame {
         repaint();
     }
 
+    /**
+     * Setup the menu bar
+     */
     private void setupMenu() {
         topBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
@@ -228,6 +250,9 @@ public class ChessGUI extends JFrame {
         topBar.add(helpMenu);
     }
 
+    /**
+     * Build the input panel
+     */
     private void buildInputPanel() {
         inputPanel = new JPanel(new BorderLayout());
 
@@ -250,22 +275,20 @@ public class ChessGUI extends JFrame {
         moveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                System.out.println(inputField.getText());
-//                JOptionPane.showMessageDialog(null, "Test message", "Help", JOptionPane.INFORMATION_MESSAGE);
                 gameEngine.processMove(inputField.getText());
             }
         });
     }
 
+    /**
+     * Build the layered panel
+     */
     private void buildLayeredPanel() {
-//        board.generateAllPossibleMoves();
-
         // loop through the board
         for (int row = 0; row < BOARD_LENGTH; row++) {
             // first of the row is the number text
             piecePanel.add(new JLabel(imageMap.get(Integer.toString(8 - row))));
             boardPanel.add(new JLabel(imageMap.get("blank")));
-//            System.out.println(row);
 
             boolean isOddRow = (row + 1) % 2 == 1;
             JLabel pieceLabel;
@@ -312,6 +335,9 @@ public class ChessGUI extends JFrame {
         }
     }
 
+    /**
+     * Setup the layered panel
+     */
     private void setupLayeredPane() {
         boardPanel = new JPanel(new GridLayout(9, 9, 0, 0));
         boardPanel.setOpaque(false);
@@ -331,6 +357,9 @@ public class ChessGUI extends JFrame {
         layeredPanel.add(piecePanel, new Integer(1));
     }
 
+    /**
+     * Load the images
+     */
     private void loadImages() {
         imageMap = new HashMap<>();
 
@@ -358,6 +387,11 @@ public class ChessGUI extends JFrame {
         }
     }
 
+    /**
+     * Get image given file name
+     * @param name file name
+     * @return ImageIcon object
+     */
     private ImageIcon getImage(String name) {
         BufferedImage img = null;
         try {
@@ -374,9 +408,6 @@ public class ChessGUI extends JFrame {
     public static void main(String[] args) {
         // GUI components
         JFrame frame = new ChessGUI();
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.pack();
-//        frame.setVisible(true);
     }
 
     /**
