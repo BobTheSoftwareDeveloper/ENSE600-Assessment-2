@@ -1,5 +1,6 @@
 package com.bobliou.chessgame.Game;
 
+import com.bobliou.chessgame.DB.DBOperations;
 import com.bobliou.chessgame.GUI.ChessGUI;
 import com.bobliou.chessgame.Pieces.Pawn;
 import java.io.BufferedReader;
@@ -23,15 +24,23 @@ public class GameEngine {
     private static GameData gameData;
     private ChessGUI chessGUI;
     private File fileObj;
+    private DBOperations db;
 
-    public GameEngine(Board board, GameData gameData, ChessGUI chessGUI) {
+    public GameEngine(Board board, GameData gameData, ChessGUI chessGUI, DBOperations db) {
         this.board = board;
         this.gameData = gameData;
         this.chessGUI = chessGUI;
+        this.db = db;
+//        db.establishConnection();
+    }
+    
+    public void reset(Board board, GameData gameData) {
+        this.board = board;
+        this.gameData = gameData;
     }
 
     private void showMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, message, "", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showMessage(String message, String title) {
@@ -55,40 +64,31 @@ public class GameEngine {
      * @return True, if successfully. False otherwise.
      */
     private boolean writeLine(String line) {
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(fileObj, true));
-            bw.write(line);
-            bw.newLine();
-            bw.close();
-            return true;
-        } catch (IOException ex) {
-            return false; // Failed
-        }
+        String gameName = chessGUI.getGameName();
+        System.out.println("Line: " + line);
+        db.addGameMoveEntry(gameName, line);
+        return true;
     }
 
     /**
      * Displays the help menu.
      */
-    private void displayHelp() {
-        System.out.println("\n#--------------HELP MENU-----------------");
-        System.out.println("Welcome to the help menu:\n");
-        System.out.println("To move a piece, please enter the position");
-        System.out.println("of the starting square, followed by a space");
-        System.out.println("and then followed by the ending position.");
-        System.out.println("E.g. 'E2 E4' or 'e2 e4'. Not case sensitive.");
-        System.out.println("\nWhen you're put into check by your opponent,");
-        System.out.println("you need to move your King out of check.");
-        System.out.println("Failure to do so will result in an illegal move,");
-        System.out.println("and the game will be over for you.");
-        System.out.println("#----------------------------------------");
+    public void displayHelp() {
+        String message = "";
+        message += ("\n#------------------------------HELP MENU----------------------------------");
+        message += "\n" + ("Welcome to the help menu:\n");
+        message += "\n" + ("To move a piece, please enter the position");
+        message += "\n" + ("of the starting square, followed by a space");
+        message += "\n" + ("and then followed by the ending position.");
+        message += "\n" + ("E.g. 'E2 E4' or 'e2 e4'. Not case sensitive.");
+        message += "\n" + ("\nPress the 'Move' button or press 'Enter' to confirm the move.");
+        message += "\n" + ("\nWhen you're put into check by your opponent,");
+        message += "\n" + ("you need to move your King out of check.");
+        message += "\n" + ("Failure to do so will result in an illegal move,");
+        message += "\n" + ("and the game will be over for you.");
+        message += "\n" + ("#-------------------------------------------------------------------------");
 
-        // Make sure that the user is ready before continuing. 
-        String line;
-        System.out.println("\nPlease enter 'ready' when you're ready to go!");
-//        while (!(line = scan.nextLine()).equals("ready")) {
-//            System.out.println("\nPlease enter 'ready' when you're ready to go!");
-//        }
-        System.out.println();
+        showMessage(message);
     }
 
     /**
@@ -98,89 +98,73 @@ public class GameEngine {
      * @return True, if the game save file was successfully loaded. False
      * otherwise.
      */
-    private boolean loadExistingGame() {
-        try {
+    public boolean loadExistingGame(String history) {
 
-            BufferedReader br = new BufferedReader(new FileReader(fileObj));
-            // First two line stores the player name for white and black player correspondingly 
-            gameData.whitePlayer = br.readLine().trim();
-            gameData.blackPlayer = br.readLine().trim();
+        for (String line : history.split(",")) {
+            line = line.trim();
+            
+            if (line == null) {
+                continue;
+            }
+            
+            if (line.equalsIgnoreCase("")) {
+                continue;
+            }
 
-            // Read until the end of the file
-            String line = "";
-            while (true) {
-                line = br.readLine();
+            line = line.trim();
+            String promotionName = "";
 
-                if (line == null) {
-                    break;
-                }
-                if (line.equalsIgnoreCase("")) {
-                    break;
-                }
-
-                line = line.trim();
-                String promotionName = "";
-
-                if (line.split(" ").length == 3) {
-                    // contains the pawn promotion piece name
-                    String promotionNewName = line.split(" ")[2].trim();
-                    if (promotionNewName.equalsIgnoreCase("Queen")) {
-                        promotionName = "Queen";
-                    } else if (promotionNewName.equalsIgnoreCase("Bishop")) {
-                        promotionName = "Bishop";
-                    } else if (promotionNewName.equalsIgnoreCase("Knight")) {
-                        promotionName = "Knight";
-                    } else if (promotionNewName.equalsIgnoreCase("Rook")) {
-                        promotionName = "Rook";
-                    } else {
-                        promotionName = "Error";
-                    }
-                }
-
-                String startPositionString = line.split(" ")[0];
-                String endPositionString = line.split(" ")[1];
-                Position startPosition = board.getPosition(startPositionString);
-                Position endPosition = board.getPosition(endPositionString);
-
-                if (startPosition == null || endPosition == null || promotionName.equals("Error")) {
-                    br.close();
-                    System.out.println("\nYour " + fileObj.getName() + " file is corrupted. Deleting save file.");
-                    System.out.println("Please open the program again.");
-                    fileObj.delete();
-                    System.exit(0);
-                }
-
-                // special check for pawn that was promoted to another piece
-                if (!promotionName.equals("")) {
-                    Pawn tempPawn = (Pawn) startPosition.getPiece();
-                    if (tempPawn.validMove(board, startPosition, endPosition, promotionName)) {
-                        board.movePiece(startPosition, endPosition);
-                        gameData.isWhiteTurn = !gameData.isWhiteTurn;
-                        continue;
-                    }
+            if (line.split(" ").length == 3) {
+                // contains the pawn promotion piece name
+                String promotionNewName = line.split(" ")[2].trim();
+                if (promotionNewName.equalsIgnoreCase("Queen")) {
+                    promotionName = "Queen";
+                } else if (promotionNewName.equalsIgnoreCase("Bishop")) {
+                    promotionName = "Bishop";
+                } else if (promotionNewName.equalsIgnoreCase("Knight")) {
+                    promotionName = "Knight";
+                } else if (promotionNewName.equalsIgnoreCase("Rook")) {
+                    promotionName = "Rook";
                 } else {
-                    if (startPosition.getPiece().validMove(board, startPosition, endPosition)) {
-                        board.movePiece(startPosition, endPosition);
-                        gameData.isWhiteTurn = !gameData.isWhiteTurn;
-                        continue;
-                    }
+                    promotionName = "Error";
                 }
+            }
 
-                br.close();
-                System.out.println("\nInvalid move detected in your " + fileObj.getName() + " file. Deleting save file.");
+            String startPositionString = line.split(" ")[0];
+            String endPositionString = line.split(" ")[1];
+            Position startPosition = board.getPosition(startPositionString);
+            Position endPosition = board.getPosition(endPositionString);
+
+            if (startPosition == null || endPosition == null || promotionName.equals("Error")) {
+                System.out.println("\nYour " + fileObj.getName() + " file is corrupted. Deleting save file.");
                 System.out.println("Please open the program again.");
                 fileObj.delete();
                 System.exit(0);
             }
-            br.close();
-            return true;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            // special check for pawn that was promoted to another piece
+            if (!promotionName.equals("")) {
+                Pawn tempPawn = (Pawn) startPosition.getPiece();
+                if (tempPawn.validMove(board, startPosition, endPosition, promotionName)) {
+                    board.movePiece(startPosition, endPosition);
+                    gameData.isWhiteTurn = !gameData.isWhiteTurn;
+                    continue;
+                }
+            } else {
+                if (startPosition.getPiece().validMove(board, startPosition, endPosition)) {
+                    board.movePiece(startPosition, endPosition);
+                    gameData.isWhiteTurn = !gameData.isWhiteTurn;
+                    continue;
+                }
+            }
+
+            System.out.println("\nInvalid move detected in your " + fileObj.getName() + " file. Deleting save file.");
+            System.out.println("Please open the program again.");
+            fileObj.delete();
+            System.exit(0);
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -318,7 +302,7 @@ public class GameEngine {
             System.exit(0);
         }
 
-//        writeLine(move.toUpperCase() + " " + newPieceName);
+        writeLine(move.toUpperCase() + " " + newPieceName);
         gameData.isWhiteTurn = !gameData.isWhiteTurn;
         chessGUI.resetTextBox();
         chessGUI.updateGUI();

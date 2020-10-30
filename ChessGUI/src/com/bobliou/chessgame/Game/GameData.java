@@ -8,7 +8,5 @@ package com.bobliou.chessgame.Game;
  */
 public class GameData {
 
-    public String whitePlayer = "";
-    public String blackPlayer = "";
     public boolean isWhiteTurn = true; // White player starts
 }
